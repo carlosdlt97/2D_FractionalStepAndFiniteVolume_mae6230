@@ -6,8 +6,9 @@
 
 int main() {
     int i = 1;
-    int j = 2; 
+    int j = 2;
     printf("%d \n", i);
     printf("%d \n", j);
+    printf("Carlos was here.\n");
 
 }
