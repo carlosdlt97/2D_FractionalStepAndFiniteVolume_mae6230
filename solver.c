@@ -22,6 +22,7 @@ int main() {
 
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
     double** v = (double**)calloc(nodes_y, sizeof(double*));    /* u and v represent barycentric velocities */
+
     double** u_star = (double**)calloc(nodes_x, sizeof(double*));
     double** v_star = (double**)calloc(nodes_y, sizeof(double*));
     for (i = 0; i < nodes_x; i++) {
@@ -32,6 +33,7 @@ int main() {
         v[i] = (double*)calloc(nodes_x, sizeof(double));
         v_star[i] = (double*)calloc(nodes_x, sizeof(double));
     }
+
 
     /* ----------------------------------------------------------------------------------------------------------------------------
     Step 1. -----------------------------------------------------------------------------------------------------------------------
@@ -69,6 +71,7 @@ int main() {
                 Hy = ((pow(v[j][i], 2) - pow(v[j][i - 1], 2)) / D_y) + (v[j + 1][i] * u[j + 1][i] - v[j][i] * u[j][i]) / D_x;
                 u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j + 1][i] - 2 * u[j][i] + u[j - 1][i]) / pow(D_x, 2) + (u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_y, 2))) + u[j][i];
                 v_star[j][i] = D_t * (Hy + (1 / Re) * ((v[j][i + 1] - 2 * v[j][i] + v[j][i - 1]) / pow(D_y, 2) + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_x, 2))) + v[j][i];
+
             }
         }
     }
