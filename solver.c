@@ -23,6 +23,7 @@ int main()
     double D_y = 1 / NY;
     double lambda = pow(D_x, -2);
     double f_norm;
+    double epsilon = pow(10,-5);
 
    
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
@@ -61,7 +62,7 @@ int main()
     double v_cc;
     double u_cc_im1; /* im1 = "i minus 1"; cell centered velocity at 1 position back in the i direction */
     double v_cc_jm1; /* jm1 = "j minus 1"; cell centered velocity at 1 position back in the j direction */
-    double u_s;  /* s = staggered velocity */
+    double u_s;  /* s = staggered velocity (i-1/2, j-1/2) from the cc values */
     double v_s;
     double u_s_ip1; /* ip1 = "i plus 1"; staggered velocity at 1 position forward in the i direction */
     double u_s_jp1; /* jp1 = "j plus 1"; staggered velocity at 1 position forward in the j direction */
@@ -103,23 +104,52 @@ int main()
     }
 
 
-    //for (j = 0; nodes_y - 1; j++)
-    //{ /*compute f along  */
-    //}
+    for (j = 0; j < nodes_y - 1; j++) {    /*compute f along right boundary */
+        i = nodes_x - 1;
+        f[j][i] = ((0 - u_star[j][i]) / D_x + (v_star[j + 1][i] - v_star[j][i]) / D_y) / D_t;           
+    }
 
-    //f_norm = 0; /* compute f_norm */
-    //for (j = 0; j < nodes_y; j++)
-    //{
-    //    for (i = 0; i < nodes_x; i++)
-    //    {
-    //        f_norm =
-    //    }
-    //}
+    for (i = 0; i < nodes_x - 1; i++) {    /*compute f along top boundary */
+        j = nodes_y - 1;
+        f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;           
+    }
 
-    //do
-    //{
-    //
-    //} while ()
+    f[nodes_y - 1][nodes_x - 1] = ((0 - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;
+
+
+
+    f_norm = 0; /* compute f_norm */
+    for (j = 0; j < nodes_y; j++)
+    {
+        for (i = 0; i < nodes_x; i++)
+        {
+            f_norm = f_norm + pow(f[j][i],2);
+        }
+    }
+    f_norm = sqrt(f_norm);
+
+
+
+    do {
+        for (j = 0; j < nodes_y; j++) {
+            for (i = 0; i < nodes_x; i++) {
+
+                p_new[j][i] = 
+
+            }
+
+        }
+    
+    } while ()
+
+
+
+
+
+
+
+
+
 
         /* ----------------------------------------------------------------------------------------------------------------------------
     Freeing memory ----------------------------------------------------------------------------------------------------------------
@@ -145,6 +175,7 @@ int main()
     free(p_new);
     free(f);
     printf("Done\n");
+
 
     return 0;
 }
