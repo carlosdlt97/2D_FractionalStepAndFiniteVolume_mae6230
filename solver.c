@@ -62,8 +62,8 @@ int main() {
                 v_s = (v[j][i] + v[j][i - 1]) / 2;
                 u_s_ip1 = (u[j][i + 1] + u[j][i]) / 2;
                 v_s_ip1 = (v[j][i + 1] + u[j][i]) / 2;
-                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
-                v_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2; /**/
+                v_s_jp1 = (u[j + 1][i] + u[j + 1][i - 1]) / 2; /**/
 
                 Hx = ((pow(u_cc, 2) - pow(u_cc_im1, 2)) / D_x) + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
                 Hy = ((pow(v[j][i], 2) - pow(v[j][i - 1], 2)) / D_y) + (v[j + 1][i] * u[j + 1][i] - v[j][i] * u[j][i]) / D_x;
