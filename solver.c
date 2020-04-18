@@ -21,7 +21,8 @@ int main() {
     double D_y = 1 / NY;
 
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
-    double** v = (double**)calloc(nodes_y, sizeof(double*));
+    double** v = (double**)calloc(nodes_y, sizeof(double*));    /* u and v represent barycentric velocities */
+
     double** u_star = (double**)calloc(nodes_x, sizeof(double*));
     double** v_star = (double**)calloc(nodes_y, sizeof(double*));
     for (i = 0; i < nodes_x; i++) {
@@ -34,51 +35,46 @@ int main() {
     }
 
 
-    /* ---------------------------------------------------------------------------------------------------
-    Initializing variables  --------------------------------------------------------------------------- 
-    */
-
-    for (i = 0; i < NX; i++) {
-        for (j = 0; j < NY; j++) {
-            u[j][i] = 0;
-            v[j][i] = 0;
-        }
-    }
-
-    for (i = 0; i < NX; i++) {     /* top boundary of the box */
-        j = NY - 1;
-        u[j][i] = 1;
-    }
-
-
-    
-
-
-
-
-
-
     /* ----------------------------------------------------------------------------------------------------------------------------
-    Step 1 -----------------------------------------------------------------------------------------------------------------------
+    Step 1. -----------------------------------------------------------------------------------------------------------------------
     */
-    for (j = 0; j < nodes_y; j++) {     /* Interior points  */
+
+    /* Initializing varibales for this step */
+    double Hx;
+    double Hy;
+    double u_cc; /* cc = Cell cented velocity */
+    double v_cc;
+    double u_cc_im1; /* im1 = "i minus 1"; cell centered velocity at 1 position back in the i direction */
+    double v_cc_jm1; /* jm1 = "j minus 1"; cell centered velocity at 1 position back in the j direction */
+    double u_s;  /* s = staggered velocity */
+    double v_s;
+    double u_s_ip1; /* ip1 = "i plus 1"; staggered velocity at 1 position forward in the i direction */
+    double u_s_jp1; /* jp1 = "j plus 1"; staggered velocity at 1 position forward in the j direction */
+    double v_s_ip1;
+    double v_s_jp1;
+    for (j = 0; j < nodes_y; j++) {
         for (i = 0; i < nodes_x; i++) {
-            double Hx;
-            double Hy;
-            if (i != 0 && j != 0 && i != (nodes_x - 1) && j != (nodes_y - 1)) {  /* NOTE: Need to check and correct all of this for staggering */
-                //printf("%d - %d \n", i, j);
-                Hx = ((pow(u[i][j], 2) - pow(u[i - 1][j], 2)) / D_x) + (u[i][j + 1] * v[i][j + 1] - u[i][j] * v[i][j]) / D_y;
-                Hy = ((pow(v[i][j], 2) - pow(v[i][j - 1], 2)) / D_y) + (v[i + 1][j] * u[i + 1][j] - v[i][j] * u[i][j]) / D_x;
-                u_star[i][j] = D_t * (Hx + (1 / Re) * ((u[i + 1][j] - 2 * u[i][j] + u[i - 1][j]) / pow(D_x, 2) + (u[i][j + 1] - 2 * u[i][j] + u[i][j - 1]) / pow(D_y, 2))) + u[i][j];
-                v_star[i][j] = D_t * (Hy + (1 / Re) * ((v[i][j + 1] - 2 * v[i][j] + v[i][j - 1]) / pow(D_y, 2) + (v[i + 1][j] - 2 * v[i][j] + v[i - 1][j]) / pow(D_x, 2))) + v[i][j];
+            if (i != 0 && j != 0 && i != (nodes_x - 1) && j != (nodes_y - 1)) {  /* NOTE: Need to check and correct all of this for staggering; boarders excluded */
+                u_cc = (u[j][i] + u[j][i + 1]) / 2;
+                v_cc = (v[j][i] + v[j + 1][i]) / 2;
+                u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
+                v_cc_jm1 = (v[j - 1][i] + v[j][i]) / 2;
+
+                u_s = (u[j][i] + u[j - 1][i]) / 2;
+                v_s = (v[j][i] + v[j][i - 1]) / 2;
+                u_s_ip1 = (u[j][i + 1] + u[j][i]) / 2;
+                v_s_ip1 = (v[j][i + 1] + u[j][i]) / 2;
+                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+                v_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+
+                Hx = ((pow(u_cc, 2) - pow(u_cc_im1, 2)) / D_x) + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
+                Hy = ((pow(v[j][i], 2) - pow(v[j][i - 1], 2)) / D_y) + (v[j + 1][i] * u[j + 1][i] - v[j][i] * u[j][i]) / D_x;
+                u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j + 1][i] - 2 * u[j][i] + u[j - 1][i]) / pow(D_x, 2) + (u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_y, 2))) + u[j][i];
+                v_star[j][i] = D_t * (Hy + (1 / Re) * ((v[j][i + 1] - 2 * v[j][i] + v[j][i - 1]) / pow(D_y, 2) + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_x, 2))) + v[j][i];
+
             }
         }
     }
-
-    
-
-
-
 
 
 
