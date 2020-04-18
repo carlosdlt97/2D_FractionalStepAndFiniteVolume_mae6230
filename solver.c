@@ -4,14 +4,16 @@
 #include <math.h>
 #include <time.h>
 
-int main() {
+int main()
+{
     /* ----------------------------------------------------------------------------------------------------------------------------
     Initializing Variables  -------------------------------------------------------------------------------------------------------
     */
     int i = 0; /* Counters for all "for loops" */
     int j = 0;
+    int k = 0;
 
-    double Re = 100;     /* Problem parameters */
+    double Re = 100; /* Problem parameters */
     double D_t = 0.001;
     int nodes_x = 20;
     int nodes_y = 20;
@@ -19,6 +21,9 @@ int main() {
     double NY = nodes_y;
     double D_x = 1 / NX;
     double D_y = 1 / NY;
+    double lambda = pow(D_x, -2);
+    double f_norm;
+
 
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
     double** v = (double**)calloc(nodes_y, sizeof(double*));    /* u and v represent barycentric velocities */
@@ -29,11 +34,21 @@ int main() {
         u[i] = (double*)calloc(nodes_y, sizeof(double));
         u_star[i] = (double*)calloc(nodes_y, sizeof(double));
     }
-    for (i = 0; i < nodes_y; i++) {
+    for (i = 0; i < nodes_y; i++)
+    {
         v[i] = (double*)calloc(nodes_x, sizeof(double));
         v_star[i] = (double*)calloc(nodes_x, sizeof(double));
     }
 
+    double** p = (double**)calloc(nodes_x, sizeof(double*));
+    double** p_new = (double**)calloc(nodes_x, sizeof(double*));
+    double** f = (double**)calloc(nodes_x, sizeof(double*));
+    for (i = 0; i < nodes_x; i++)
+    {
+        p[i] = (double*)calloc(nodes_y, sizeof(double));
+        p_new[i] = (double*)calloc(nodes_y, sizeof(double));
+        f[i] = (double*)calloc(nodes_y, sizeof(double));
+    }
 
     /* ----------------------------------------------------------------------------------------------------------------------------
     Step 1. -----------------------------------------------------------------------------------------------------------------------
@@ -64,8 +79,8 @@ int main() {
                 v_s = (v[j][i] + v[j][i - 1]) / 2;
                 u_s_ip1 = (u[j][i + 1] + u[j][i]) / 2;
                 v_s_ip1 = (v[j][i + 1] + u[j][i]) / 2;
-                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2; /**/
-                v_s_jp1 = (u[j + 1][i] + u[j + 1][i - 1]) / 2; /**/
+                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+                v_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
 
                 Hx = ((pow(u_cc, 2) - pow(u_cc_im1, 2)) / D_x) + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
                 Hy = ((pow(v[j][i], 2) - pow(v[j][i - 1], 2)) / D_y) + (v[j + 1][i] * u[j + 1][i] - v[j][i] * u[j][i]) / D_x;
@@ -76,16 +91,49 @@ int main() {
         }
     }
 
+    /* ---------------------------------------------------------------------------------------------------
+    Step 2 ------------------------------------------------------------------------------------------*/
+
+    for (j = 0; j < nodes_y - 1; j++)
+    { /* Compute f on interior points  */
+        for (i = 0; i < nodes_x - 1; i++)
+        {
+            f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (v_star[j + 1][i] - v_star[j][i]) / D_y) / D_t;
+        }
+    }
 
 
-    /* ----------------------------------------------------------------------------------------------------------------------------
+    //for (j = 0; nodes_y - 1; j++)
+    //{ /*compute f along  */
+    //}
+
+    //f_norm = 0; /* compute f_norm */
+    //for (j = 0; j < nodes_y; j++)
+    //{
+    //    for (i = 0; i < nodes_x; i++)
+    //    {
+    //        f_norm =
+    //    }
+    //}
+
+    //do
+    //{
+    //
+    //} while ()
+
+        /* ----------------------------------------------------------------------------------------------------------------------------
     Freeing memory ----------------------------------------------------------------------------------------------------------------
     */
-    for (i = 0; i < nodes_x; i++) {
+    for (i = 0; i < nodes_x; i++)
+    {
         free(u[i]);
         free(u_star[i]);
+        free(p[i]);
+        free(p_new[i]);
+        free(f[i]);
     }
-    for (i = 0; i < nodes_y; i++) {
+    for (i = 0; i < nodes_y; i++)
+    {
         free(v[i]);
         free(v_star[i]);
     }
@@ -93,6 +141,9 @@ int main() {
     free(v);
     free(u_star);
     free(v_star);
+    free(p);
+    free(p_new);
+    free(f);
     printf("Done\n");
 
     return 0;
