@@ -15,12 +15,12 @@ int main()
 
     double Re = 100; /* Problem parameters */
     double D_t = 0.001;
-    int nodes_x = 20;
-    int nodes_y = 20;
+    int nodes_x = 21;
+    int nodes_y = 21;
     double NX = nodes_x;
     double NY = nodes_y;
-    double D_x = 1 / NX;
-    double D_y = 1 / NY;
+    double D_x = 1 / (NX - 1);
+    double D_y = 1 / (NY - 1);
     double lambda = pow(D_x, -2);
     double f_norm;
 
@@ -51,10 +51,10 @@ int main()
     }
 
     /* ----------------------------------------------------------------------------------------------------------------------------
-    Step 1. -----------------------------------------------------------------------------------------------------------------------
-    */
+   Step 1. -----------------------------------------------------------------------------------------------------------------------
+   */
 
-    /* Initializing varibales for this step */
+   /* Initializing varibales for this step */
     double Hx;
     double Hy;
     double u_cc; /* cc = Cell cented velocity */
@@ -69,7 +69,8 @@ int main()
     double v_s_jp1;
     for (j = 0; j < nodes_y; j++) {
         for (i = 0; i < nodes_x; i++) {
-            if (i != 0 && j != 0 && i != (nodes_x - 1) && j != (nodes_y - 1)) {  /* NOTE: Need to check and correct all of this for staggering; boarders excluded */
+            if (i != 0 && j != 0 && i != (nodes_x - 1) && j != (nodes_y - 1)) {  /* Calculating u_star & v_star at interior points */
+                printf("%d - %d\n", j, i);
                 u_cc = (u[j][i] + u[j][i + 1]) / 2;
                 v_cc = (v[j][i] + v[j + 1][i]) / 2;
                 u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
@@ -77,16 +78,28 @@ int main()
 
                 u_s = (u[j][i] + u[j - 1][i]) / 2;
                 v_s = (v[j][i] + v[j][i - 1]) / 2;
-                u_s_ip1 = (u[j][i + 1] + u[j][i]) / 2;
-                v_s_ip1 = (v[j][i + 1] + u[j][i]) / 2;
+                u_s_ip1 = (u[j][i + 1] + u[j - 1][i + 1]) / 2;
+                v_s_ip1 = (v[j][i + 1] + v[j][i]) / 2;
                 u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
-                v_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+                v_s_jp1 = (v[j + 1][i] + v[j + 1][i - 1]) / 2;
 
                 Hx = ((pow(u_cc, 2) - pow(u_cc_im1, 2)) / D_x) + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
-                Hy = ((pow(v[j][i], 2) - pow(v[j][i - 1], 2)) / D_y) + (v[j + 1][i] * u[j + 1][i] - v[j][i] * u[j][i]) / D_x;
-                u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j + 1][i] - 2 * u[j][i] + u[j - 1][i]) / pow(D_x, 2) + (u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_y, 2))) + u[j][i];
-                v_star[j][i] = D_t * (Hy + (1 / Re) * ((v[j][i + 1] - 2 * v[j][i] + v[j][i - 1]) / pow(D_y, 2) + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_x, 2))) + v[j][i];
+                Hy = ((pow(v_cc, 2) - pow(v_cc_jm1, 2)) / D_y) + (u_s_ip1 * v_s_ip1 - u_s * v_s) / D_x;
 
+                u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_x, 2) + (u[j + 1][i] - 2 * u[j][i] + u[j - 1][i]) / pow(D_y, 2))) + u[j][i];
+                v_star[j][i] = D_t * (Hy + (1 / Re) * ((v[j][i + 1] - 2 * v[j][i] + v[j][i - 1]) / pow(D_x, 2) + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_y, 2))) + v[j][i];
+            }
+            else if (i == 0) {      /* Calculating u_star & v_star at the left wall */
+                printf("%d - %d\n", j, i);
+            }
+            else if (i == NX) {     /* Calculating u_star & v_star at the right wall */
+                printf("%d - %d\n", j, i);
+            }
+            else if (j == 0) {      /* Calculating u_star & v_star at the bottom wall */
+                printf("%d - %d\n", j, i);
+            }
+            else if (j == NY) {     /* Calculating u_star & v_star at the top wall (moving lid) */
+                printf("%d - %d\n", j, i);
             }
         }
     }
