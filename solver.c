@@ -23,8 +23,12 @@ int main()
     double D_y = 1 / (NY - 1);
     double lambda = pow(D_x, -2);
     double f_norm;
+    double epsilon = pow(10,-5);
+    double grad_p_minus_f_norm;
+    double RHS;
 
 
+   
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
     double** v = (double**)calloc(nodes_y, sizeof(double*));    /* u and v represent barycentric velocities */
 
@@ -36,18 +40,20 @@ int main()
     }
     for (i = 0; i < nodes_y; i++)
     {
-        v[i] = (double*)calloc(nodes_x, sizeof(double));
-        v_star[i] = (double*)calloc(nodes_x, sizeof(double));
+        v[i] = (double *)calloc(nodes_x, sizeof(double));
+        v_star[i] = (double *)calloc(nodes_x, sizeof(double));
     }
 
-    double** p = (double**)calloc(nodes_x, sizeof(double*));
-    double** p_new = (double**)calloc(nodes_x, sizeof(double*));
-    double** f = (double**)calloc(nodes_x, sizeof(double*));
+    double **p = (double **)calloc(nodes_x, sizeof(double *));
+    double **p_new = (double **)calloc(nodes_x, sizeof(double *));
+    double **f = (double **)calloc(nodes_x, sizeof(double *));
+    double **grad_p = (double **)calloc(nodes_x, sizeof(double *));
     for (i = 0; i < nodes_x; i++)
     {
-        p[i] = (double*)calloc(nodes_y, sizeof(double));
-        p_new[i] = (double*)calloc(nodes_y, sizeof(double));
-        f[i] = (double*)calloc(nodes_y, sizeof(double));
+        p[i] = (double *)calloc(nodes_y, sizeof(double));
+        p_new[i] = (double *)calloc(nodes_y, sizeof(double));
+        f[i] = (double *)calloc(nodes_y, sizeof(double));
+        grad_p[i] = (double *)calloc(nodes_y, sizeof(double));
     }
 
     /* ----------------------------------------------------------------------------------------------------------------------------
@@ -61,7 +67,7 @@ int main()
     double v_cc;
     double u_cc_im1; /* im1 = "i minus 1"; cell centered velocity at 1 position back in the i direction */
     double v_cc_jm1; /* jm1 = "j minus 1"; cell centered velocity at 1 position back in the j direction */
-    double u_s;  /* s = staggered velocity */
+    double u_s;  /* s = staggered velocity (i-1/2, j-1/2) from the cc values */
     double v_s;
     double u_s_ip1; /* ip1 = "i plus 1"; staggered velocity at 1 position forward in the i direction */
     double u_s_jp1; /* jp1 = "j plus 1"; staggered velocity at 1 position forward in the j direction */
@@ -170,37 +176,166 @@ int main()
         }
     }
 
+
     /* ---------------------------------------------------------------------------------------------------
     Step 2 ------------------------------------------------------------------------------------------*/
 
-    for (j = 0; j < nodes_y - 1; j++)
-    { /* Compute f on interior points  */
-        for (i = 0; i < nodes_x - 1; i++)
+    for (j = 0; j < nodes_y - 2; j++)
+    { /* Compute f on interior points (and left boundary and bottom boundary in diagram)  */
+        for (i = 0; i < nodes_x - 2; i++)
         {
             f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (v_star[j + 1][i] - v_star[j][i]) / D_y) / D_t;
         }
     }
 
 
-    //for (j = 0; nodes_y - 1; j++)
-    //{ /*compute f along  */
-    //}
+    for (j = 0; j < nodes_y - 2; j++) {    /*compute f along right boundary */
+        i = nodes_x - 2;
+        f[j][i] = ((0 - u_star[j][i]) / D_x + (v_star[j + 1][i] - v_star[j][i]) / D_y) / D_t;           
+    }
 
-    //f_norm = 0; /* compute f_norm */
-    //for (j = 0; j < nodes_y; j++)
-    //{
-    //    for (i = 0; i < nodes_x; i++)
-    //    {
-    //        f_norm =
-    //    }
-    //}
+    for (i = 0; i < nodes_x - 2; i++) {    /*compute f along top boundary */
+        j = nodes_y - 2;
+        f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;           
+    }
 
-    //do
-    //{
-    //
-    //} while ()
+    f[nodes_y - 2][nodes_x - 2] = ((0 - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;
 
-        /* ----------------------------------------------------------------------------------------------------------------------------
+
+
+    f_norm = 0; /* compute f_norm and set p = 0 and grad_p everywhere */
+    for (j = 0; j < nodes_y - 1; j++) {
+        for (i = 0; i < nodes_x - 1; i++) {
+            f_norm = f_norm + pow(f[j][i],2);
+            p[j][i] = 0;
+            grad_p[j][i] = 0;
+        }
+    }
+    f_norm = sqrt(f_norm);
+
+
+
+    do {
+        
+
+        //update interior values
+        for (j = 1; j < nodes_y - 2; j++) {
+            for (i = 1; i < nodes_x - 2; i++) {
+
+                p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] + p[j+1][i] ) / 4 - f[j][i] / (4 * lambda);
+
+            }
+
+        }
+
+        //update left boundary values
+        for (j = 1; j < nodes_y - 2; j++) {
+            i = 0;
+            p_new[j][i] = ( p[j][i+1] + p[j-1][i] + p[j+1][i] ) / 3 - f[j][i] / (3 * lambda);
+
+        }
+
+        //update right boundary values
+        for (j = 1; j < nodes_y - 2; j++) {
+            i = nodes_y - 2;
+            p_new[j][i] = ( p[j][i-1] + p[j-1][i] + p[j+1][i] ) / 3 - f[j][i] / (3 * lambda);
+
+        }
+
+        //update bottom boundary values 
+        for (i = 1; i < nodes_x - 2; i++) {
+            j = 0;
+            p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j+1][i] ) / 3 - f[j][i] / (3 * lambda);
+        }
+
+        //update top boundary values
+        for (i = 1; i < nodes_x - 2; i++) {
+            j = nodes_x - 2;
+            p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] ) / 3 - f[j][i] / (3 * lambda);
+        }
+
+        //update corner points
+        p_new[0][0] = (p[1][0] + p[0][1]) / 2 - f[j][i] / (2 * lambda); 
+        p_new[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) / 2 - f[j][i] / (2 * lambda);
+        p_new[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) / 2 - f[j][i] / (2 * lambda);
+        p_new[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) / 2 - f[j][i] / (2 * lambda);
+
+        //update p matrix with p_new values
+        for (j = 0; j < nodes_y - 1; j++) {
+            for (i = 0; i < nodes_x - 1; i++) {
+                p[j][i] = p_new[j][i];
+            }
+        }        
+
+
+
+        //compute grad_p matrix
+        for (j = 1; j < nodes_y - 2; j++) {
+            for (i = 1; i < nodes_x - 2; i++) {
+                grad_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] + p[j+1][i] )*lambda - 4 * lambda * p[j][i];
+            }
+        }
+        for (j = 1; j < nodes_y - 2; j++) {
+            i = 0;
+            grad_p[j][i] = ( p[j][i+1] + p[j-1][i] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
+        }
+        for (j = 1; j < nodes_y - 2; j++) {
+            i = nodes_y - 2;
+            grad_p[j][i] = ( p[j][i-1] + p[j-1][i] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
+        }
+        for (i = 1; i < nodes_x - 2; i++) {
+            j = 0;
+            grad_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
+        }
+        for (i = 1; i < nodes_x - 2; i++) {
+            j = nodes_x - 2;
+            grad_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] ) * lambda - p[j][i] * (3 * lambda);
+        }
+        grad_p[0][0] = (p[1][0] + p[0][1]) * lambda - p[j][i] * (2 * lambda); 
+        grad_p[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) * lambda - p[j][i] * (2 * lambda);
+        grad_p[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) * lambda - p[j][i] * (2 * lambda);
+        grad_p[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) * lambda - p[j][i] * (2 * lambda);
+
+
+        //compute the norm
+        grad_p_minus_f_norm = 0;
+        
+        for (j = 0; j < nodes_y - 1; j++) {
+            for (i = 0; i < nodes_x - 1; i++) {
+                grad_p_minus_f_norm = grad_p_minus_f_norm + pow( ( grad_p[j][i] - f[j][i] ) ,2);
+            }
+        }
+
+        grad_p_minus_f_norm = sqrt(grad_p_minus_f_norm);
+        
+
+        if (f_norm = 0) {
+            RHS = epsilon;
+        }
+        else {
+            RHS = epsilon * f_norm;
+        }
+        
+    
+    } while (grad_p_minus_f_norm > RHS);
+
+
+
+    /* ----------------------------------------------------------------------------------------------------------------------------
+    Step 3 ----------------------------------------------------------------------------------------------------------------------- 
+    */ 
+  
+  
+  
+  
+
+
+
+
+
+
+
+    /* ----------------------------------------------------------------------------------------------------------------------------
     Freeing memory ----------------------------------------------------------------------------------------------------------------
     */
     for (i = 0; i < nodes_x; i++)
@@ -210,6 +345,7 @@ int main()
         free(p[i]);
         free(p_new[i]);
         free(f[i]);
+        free(grad_p[i]);
     }
     for (i = 0; i < nodes_y; i++)
     {
@@ -223,7 +359,9 @@ int main()
     free(p);
     free(p_new);
     free(f);
+    free(grad_p);
     printf("Done\n");
+
 
     return 0;
 }
