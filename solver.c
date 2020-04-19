@@ -15,8 +15,8 @@ int main()
 
     double Re = 100; /* Problem parameters */
     double D_t = 0.001;
-    int nodes_x = 20;
-    int nodes_y = 20;
+    int nodes_x = 21;
+    int nodes_y = 21;
     double NX = nodes_x;
     double NY = nodes_y;
     double D_x = 1 / (NX - 1);
@@ -26,6 +26,7 @@ int main()
     double epsilon = pow(10,-5);
     double grad_p_minus_f_norm;
     double RHS;
+
 
    
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
@@ -55,7 +56,6 @@ int main()
         grad_p[i] = (double *)calloc(nodes_y, sizeof(double));
     }
 
-
     /* ----------------------------------------------------------------------------------------------------------------------------
     Step 1. -----------------------------------------------------------------------------------------------------------------------
     */
@@ -75,28 +75,106 @@ int main()
     double v_s_jp1;
     for (j = 0; j < nodes_y; j++) {
         for (i = 0; i < nodes_x; i++) {
-            if (i != 0 && j != 0 && i != (nodes_x - 1) && j != (nodes_y - 1)) {  /* NOTE: Need to check and correct all of this for staggering; boarders excluded */
+            /* Calculating u_star */
+            if (i > 0 && j > 0 && i < (nodes_x - 1) && j < (nodes_y - 2)) {  /* At interior points except at the edges */
                 u_cc = (u[j][i] + u[j][i + 1]) / 2;
-                v_cc = (v[j][i] + v[j + 1][i]) / 2;
                 u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
+
+                u_s = (u[j][i] + u[j - 1][i]) / 2;
+                v_s = (v[j][i] + v[j][i - 1]) / 2;
+                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+                v_s_jp1 = (v[j + 1][i] + v[j + 1][i - 1]) / 2;
+
+                Hx = ((pow(u_cc, 2) - pow(u_cc_im1, 2)) / D_x) + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
+
+                u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_x, 2) + (u[j + 1][i] - 2 * u[j][i] + u[j - 1][i]) / pow(D_y, 2)) * u[j][i]) + u[j][i];
+            }
+            else if (i == 0) {      /* At the left wall */
+                u_star[j][i] = 0;
+            }
+            else if (i == nodes_x - 1) {     /* At the right wall */
+                u_star[j][i] = 0;
+            }
+            else if (j == 0) {      /* Just above the bottom wall */
+                u_cc = (u[j][i] + u[j][i + 1]) / 2;
+                u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
+
+                u_s = 0;
+                v_s = 0;
+                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+                v_s_jp1 = (v[j + 1][i - 1] + v[j + 1][i]) / 2;
+
+                Hx = (pow(u_cc, 2) + pow(u_cc_im1, 2)) / D_x + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
+
+                u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_x, 2) + ((1 / D_y) * (u[j + 1][i] - u[j][i]) + (2 / D_y) * (-u[j][i])) / D_y) * u[j][i]) + u[j][i];
+            }
+            else if (j == nodes_y - 2) {    /* Just below the top lid */
+                u_cc = (u[j][i] + u[j][i + 1]) / 2;
+                u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
+
+                u_s = (u[j][i] + u[j - 1][i]) / 2;
+                v_s = (v[j][i - 1] + v[j][i]) / 2;
+                u_s_jp1 = 1;
+                v_s_jp1 = 0;
+
+                Hx = (pow(u_cc, 2) + pow(u_cc_im1, 2)) / D_x + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
+
+                u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_x, 2) + ((2 / D_y) * (1 - u[j][i]) + (1 / D_y) * (u[j - 1][i] - u[j][i])) / D_y) * u[j][i]) + u[j][i];
+            }
+            else if (j == nodes_y - 1) {     /* At the top lid */
+                u_star[j][i] = 1;
+            }
+            /* Calculating v_star */
+            if (i > 0 && j > 0 && i < (nodes_x - 2) && j < (nodes_y - 1)) {  /* At interior points except at the edges */
+                v_cc = (v[j][i] + v[j + 1][i]) / 2;
                 v_cc_jm1 = (v[j - 1][i] + v[j][i]) / 2;
 
                 u_s = (u[j][i] + u[j - 1][i]) / 2;
                 v_s = (v[j][i] + v[j][i - 1]) / 2;
-                u_s_ip1 = (u[j][i + 1] + u[j][i]) / 2;
-                v_s_ip1 = (v[j][i + 1] + u[j][i]) / 2;
-                u_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
-                v_s_jp1 = (u[j + 1][i] + u[j][i]) / 2;
+                u_s_ip1 = (u[j][i + 1] + u[j - 1][i + 1]) / 2;
+                v_s_ip1 = (v[j][i + 1] + v[j][i]) / 2;
 
-                Hx = ((pow(u_cc, 2) - pow(u_cc_im1, 2)) / D_x) + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
-                Hy = ((pow(v[j][i], 2) - pow(v[j][i - 1], 2)) / D_y) + (v[j + 1][i] * u[j + 1][i] - v[j][i] * u[j][i]) / D_x;
-                u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j + 1][i] - 2 * u[j][i] + u[j - 1][i]) / pow(D_x, 2) + (u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_y, 2))) + u[j][i];
-                v_star[j][i] = D_t * (Hy + (1 / Re) * ((v[j][i + 1] - 2 * v[j][i] + v[j][i - 1]) / pow(D_y, 2) + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_x, 2))) + v[j][i];
+                Hy = ((pow(v_cc, 2) - pow(v_cc_jm1, 2)) / D_y) + (u_s_ip1 * v_s_ip1 - u_s * v_s) / D_x;
 
+                v_star[j][i] = D_t * (Hy + (1 / Re) * ((v[j][i + 1] - 2 * v[j][i] + v[j][i - 1]) / pow(D_x, 2) + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_y, 2)) * v[j][i]) + v[j][i];
+            }
+            else if (j == 0) {    /* At the bottom wall */
+                v_star[j][i] = 0;
+            }
+            else if (j == nodes_y - 1) {     /* At the top lid */
+                v_star[j][i] = 0;
+            }
+            else if (i == 0) {      /* Just to the right of the left wall */
+                v_cc = (v[j][i] + v[j + 1][i]) / 2;
+                v_cc_jm1 = (v[j - 1][i] + v[j][i]) / 2;
+
+                u_s = 0;
+                v_s = 0;
+                u_s_ip1 = (u[j][i + 1] + u[j - 1][i + 1]) / 2;
+                v_s_ip1 = (v[j][i] + v[j][i + 1]) / 2;
+
+                Hy = (pow(v_cc, 2) + pow(v_cc_jm1, 2)) / D_y + (u_s_ip1 * v_s_ip1 - u_s * v_s) / D_x;
+
+                v_star[j][i] = D_t * (Hy + (1 / Re) * (((1 / D_x) * (v[j][i + 1] - v[j][i]) + (2 / D_x) * (-v[j][i])) / D_x + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_y, 2)) * v[j][i]) + v[j][i];
+            }
+            else if (i == nodes_x - 2) {     /* Just the left of the right wall */
+                v_cc = (v[j][i] + v[j + 1][i]) / 2;
+                v_cc_jm1 = (v[j - 1][i] + v[j][i]) / 2;
+
+                u_s = (u[j][i] + u[j - 1][i]) / 2;
+                v_s = (v[j][i] + v[j][i - 1]) / 2;
+                u_s_ip1 = 0;
+                v_s_ip1 = 0;
+
+                Hy = (pow(v_cc, 2) + pow(v_cc_jm1, 2)) / D_y + (u_s_ip1 * v_s_ip1 - u_s * v_s) / D_x;
+
+                v_star[j][i] = D_t * (Hy + (1 / Re) * (((2 / D_x) * (-v[j][i]) + (1 / D_x) * (v[j][i - 1] - v[j][i])) / D_x + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_y, 2)) * v[j][i]) + v[j][i];
+            }
+            else if (i == nodes_x - 1) {      /* At the right wall */
+                v_star[j][i] = 0;
             }
         }
     }
-
 
 
     /* ---------------------------------------------------------------------------------------------------
@@ -243,7 +321,13 @@ int main()
 
 
 
-
+    /* ----------------------------------------------------------------------------------------------------------------------------
+    Step 3 ----------------------------------------------------------------------------------------------------------------------- 
+    */ 
+  
+  
+  
+  
 
 
 
