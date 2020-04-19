@@ -25,6 +25,7 @@ int main()
     double f_norm;
     double epsilon = pow(10,-5);
     double grad_p_minus_f_norm;
+    double RHS;
 
    
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
@@ -53,6 +54,7 @@ int main()
         f[i] = (double *)calloc(nodes_y, sizeof(double));
         grad_p[i] = (double *)calloc(nodes_y, sizeof(double));
     }
+
 
     /* ----------------------------------------------------------------------------------------------------------------------------
     Step 1. -----------------------------------------------------------------------------------------------------------------------
@@ -95,6 +97,8 @@ int main()
         }
     }
 
+
+
     /* ---------------------------------------------------------------------------------------------------
     Step 2 ------------------------------------------------------------------------------------------*/
 
@@ -131,9 +135,11 @@ int main()
     }
     f_norm = sqrt(f_norm);
 
-    
+
 
     do {
+        
+
         //update interior values
         for (j = 1; j < nodes_y - 2; j++) {
             for (i = 1; i < nodes_x - 2; i++) {
@@ -159,13 +165,13 @@ int main()
         }
 
         //update bottom boundary values 
-        for (i = 1; i < nodes_x - 2; j++) {
+        for (i = 1; i < nodes_x - 2; i++) {
             j = 0;
             p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j+1][i] ) / 3 - f[j][i] / (3 * lambda);
         }
 
         //update top boundary values
-        for (i = 1; i < nodes_x - 2; j++) {
+        for (i = 1; i < nodes_x - 2; i++) {
             j = nodes_x - 2;
             p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] ) / 3 - f[j][i] / (3 * lambda);
         }
@@ -199,11 +205,11 @@ int main()
             i = nodes_y - 2;
             grad_p[j][i] = ( p[j][i-1] + p[j-1][i] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
         }
-        for (i = 1; i < nodes_x - 2; j++) {
+        for (i = 1; i < nodes_x - 2; i++) {
             j = 0;
             grad_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
         }
-        for (i = 1; i < nodes_x - 2; j++) {
+        for (i = 1; i < nodes_x - 2; i++) {
             j = nodes_x - 2;
             grad_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] ) * lambda - p[j][i] * (3 * lambda);
         }
@@ -223,9 +229,17 @@ int main()
         }
 
         grad_p_minus_f_norm = sqrt(grad_p_minus_f_norm);
+        
 
+        if (f_norm = 0) {
+            RHS = epsilon;
+        }
+        else {
+            RHS = epsilon * f_norm;
+        }
+        
     
-    } while (grad_p_minus_f_norm > epsilon * f_norm);
+    } while (grad_p_minus_f_norm > RHS);
 
 
 
