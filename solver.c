@@ -83,8 +83,8 @@ int main()
 
     double Re = 100; /* Problem parameters */
     double D_t = 0.001;
-    int nodes_x = 21;
-    int nodes_y = 21;
+    int nodes_x = 11;
+    int nodes_y = 11;
     double NX = nodes_x;
     double NY = nodes_y;
     double D_x = 1 / (NX - 1);
@@ -254,7 +254,7 @@ int main()
             }
         }
 
-        printf("check");
+        printf("check\n");
         /* ---------------------------------------------------------------------------------------------------
        Step 2 ------------------------------------------------------------------------------------------*/
 
@@ -277,7 +277,7 @@ int main()
             f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;
         }
 
-        f[nodes_y - 2][nodes_x - 2] = ((0 - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t; /* CHECK THIS FOR j,i values.  j,i is assumed, not set here. */
+        f[nodes_y - 2][nodes_x - 2] = ((0 - u_star[nodes_y - 2][nodes_x - 2]) / D_x + (0 - v_star[nodes_y - 2][nodes_x - 2]) / D_y) / D_t;
 
 
 
@@ -333,10 +333,10 @@ int main()
             }
 
             //update corner points
-            p_new[0][0] = (p[1][0] + p[0][1]) / 2 - f[j][i] / (2 * lambda);
-            p_new[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) / 2 - f[j][i] / (2 * lambda);
-            p_new[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) / 2 - f[j][i] / (2 * lambda);
-            p_new[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) / 2 - f[j][i] / (2 * lambda);
+            p_new[0][0] = (p[1][0] + p[0][1]) / 2 - f[0][0] / (2 * lambda);
+            p_new[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) / 2 - f[0][nodes_x - 2] / (2 * lambda);
+            p_new[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) / 2 - f[nodes_y - 2][0] / (2 * lambda);
+            p_new[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) / 2 - f[nodes_y - 2][nodes_y - 2] / (2 * lambda);
 
             //update p matrix with p_new values
             for (j = 0; j < nodes_y - 1; j++) {
@@ -344,8 +344,17 @@ int main()
                     p[j][i] = p_new[j][i];
                 }
             }
-
-
+            
+            /* PRINTING TO CHECK VALUES (DELETE THIS LATER)
+            for (j = nodes_y - 1; j > -1; j--) {
+                for (i = 0; i < nodes_x; i++) {
+                    printf("%f,  ", p[j][i]);
+                }
+                printf("\n");
+            }
+            char ch;
+            scanf("%c", &ch);
+            */
 
             //compute laplace_p matrix
             for (j = 1; j < nodes_y - 2; j++) {
@@ -369,11 +378,20 @@ int main()
                 j = nodes_x - 2;
                 laplace_p[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i]) * lambda - p[j][i] * (3 * lambda);
             }
-            laplace_p[0][0] = (p[1][0] + p[0][1]) * lambda - p[j][i] * (2 * lambda);
-            laplace_p[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) * lambda - p[j][i] * (2 * lambda);
-            laplace_p[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) * lambda - p[j][i] * (2 * lambda);
-            laplace_p[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) * lambda - p[j][i] * (2 * lambda);
+            laplace_p[0][0] = (p[1][0] + p[0][1]) * lambda - p[0][0] * (2 * lambda);
+            laplace_p[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) * lambda - p[0][nodes_x - 2] * (2 * lambda);
+            laplace_p[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) * lambda - p[nodes_y - 2][0] * (2 * lambda);
+            laplace_p[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) * lambda - p[nodes_y - 2][nodes_x - 2] * (2 * lambda);
 
+            /* PRINTING TO CHECK VALUES (DELETE THIS LATER) */
+            for (j = nodes_y - 1; j > -1; j--) {
+                for (i = 0; i < nodes_x; i++) {
+                    printf("%f,  ", laplace_p[j][i]);
+                }
+                printf("\n");
+            }
+            char ch;
+            scanf("%c", &ch);
 
             //compute the norm
             laplace_p_minus_f_norm = 0;
