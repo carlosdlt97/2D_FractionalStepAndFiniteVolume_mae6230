@@ -169,7 +169,7 @@ int main()
                 else if (i == 0) {      /* At the left wall (CHECKED) */
                     u_star[j][i] = 0;
                 }
-                else if (i == nodes_x - 1) {     /* At the right wall */
+                else if (i == nodes_x - 1) {     /* At the right wall (CHECKED) */
                     u_star[j][i] = 0;
                 }
                 else if (j == 0) {      /* Just above the bottom wall */
