@@ -91,7 +91,7 @@ int main()
     double D_y = 1 / (NY - 1);
     double lambda = pow(D_x, -2);
     double f_norm;
-    double epsilon = pow(10,-5);
+    double epsilon = pow(10, -5);
     double laplace_p_minus_f_norm;
     double RHS;
     double num_steps = 100;
@@ -114,7 +114,7 @@ int main()
 
 
 
-   
+
     double** u = (double**)calloc(nodes_x, sizeof(double*));    /* Memory allocation for large arrays (velocities, etc.) */
     double** v = (double**)calloc(nodes_y, sizeof(double*));    /* u and v represent barycentric velocities */
 
@@ -126,30 +126,31 @@ int main()
     }
     for (i = 0; i < nodes_y; i++)
     {
-        v[i] = (double *)calloc(nodes_x, sizeof(double));
-        v_star[i] = (double *)calloc(nodes_x, sizeof(double));
+        v[i] = (double*)calloc(nodes_x, sizeof(double));
+        v_star[i] = (double*)calloc(nodes_x, sizeof(double));
     }
 
-    double **p = (double **)calloc(nodes_x, sizeof(double *));
-    double **p_new = (double **)calloc(nodes_x, sizeof(double *));
-    double **f = (double **)calloc(nodes_x, sizeof(double *));
-    double **laplace_p = (double **)calloc(nodes_x, sizeof(double *));
+
+    double** p = (double**)calloc(nodes_x, sizeof(double*));
+    double** p_new = (double**)calloc(nodes_x, sizeof(double*));
+    double** f = (double**)calloc(nodes_x, sizeof(double*));
+    double** laplace_p = (double**)calloc(nodes_x, sizeof(double*));
     for (i = 0; i < nodes_x; i++)
     {
-        p[i] = (double *)calloc(nodes_y, sizeof(double));
-        p_new[i] = (double *)calloc(nodes_y, sizeof(double));
-        f[i] = (double *)calloc(nodes_y, sizeof(double));
-        laplace_p[i] = (double *)calloc(nodes_y, sizeof(double));
+        p[i] = (double*)calloc(nodes_y, sizeof(double));
+        p_new[i] = (double*)calloc(nodes_y, sizeof(double));
+        f[i] = (double*)calloc(nodes_y, sizeof(double));
+        laplace_p[i] = (double*)calloc(nodes_y, sizeof(double));
     }
 
 
     for (iter = 0; iter < num_steps; iter++) {
 
-        
+
         /* ----------------------------------------------------------------------------------------------------------------------------
         Step 1. -----------------------------------------------------------------------------------------------------------------------
         */
-        
+
         for (j = 0; j < nodes_y; j++) {
             for (i = 0; i < nodes_x; i++) {
                 /* Calculating u_star */
@@ -255,7 +256,7 @@ int main()
 
 
         /* ---------------------------------------------------------------------------------------------------
-        Step 2 ------------------------------------------------------------------------------------------*/
+       Step 2 ------------------------------------------------------------------------------------------*/
 
         for (j = 0; j < nodes_y - 2; j++)
         { /* Compute f on interior points (and left boundary and bottom boundary in diagram)  */
@@ -268,12 +269,12 @@ int main()
 
         for (j = 0; j < nodes_y - 2; j++) {    /*compute f along right boundary */
             i = nodes_x - 2;
-            f[j][i] = ((0 - u_star[j][i]) / D_x + (v_star[j + 1][i] - v_star[j][i]) / D_y) / D_t;           
+            f[j][i] = ((0 - u_star[j][i]) / D_x + (v_star[j + 1][i] - v_star[j][i]) / D_y) / D_t;
         }
 
         for (i = 0; i < nodes_x - 2; i++) {    /*compute f along top boundary */
             j = nodes_y - 2;
-            f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;           
+            f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;
         }
 
         f[nodes_y - 2][nodes_x - 2] = ((0 - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;
@@ -283,7 +284,7 @@ int main()
         f_norm = 0; /* compute f_norm and set p = 0 and laplace_p everywhere */
         for (j = 0; j < nodes_y - 1; j++) {
             for (i = 0; i < nodes_x - 1; i++) {
-                f_norm = f_norm + pow(f[j][i],2);
+                f_norm = f_norm + pow(f[j][i], 2);
                 p[j][i] = 0;
                 laplace_p[j][i] = 0;
             }
@@ -293,13 +294,13 @@ int main()
 
 
         do {
-            
+
 
             //update interior values
             for (j = 1; j < nodes_y - 2; j++) {
                 for (i = 1; i < nodes_x - 2; i++) {
 
-                    p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] + p[j+1][i] ) / 4 - f[j][i] / (4 * lambda);
+                    p_new[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) / 4 - f[j][i] / (4 * lambda);
 
                 }
 
@@ -308,31 +309,31 @@ int main()
             //update left boundary values
             for (j = 1; j < nodes_y - 2; j++) {
                 i = 0;
-                p_new[j][i] = ( p[j][i+1] + p[j-1][i] + p[j+1][i] ) / 3 - f[j][i] / (3 * lambda);
+                p_new[j][i] = (p[j][i + 1] + p[j - 1][i] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
 
             }
 
             //update right boundary values
             for (j = 1; j < nodes_y - 2; j++) {
                 i = nodes_y - 2;
-                p_new[j][i] = ( p[j][i-1] + p[j-1][i] + p[j+1][i] ) / 3 - f[j][i] / (3 * lambda);
+                p_new[j][i] = (p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
 
             }
 
             //update bottom boundary values 
             for (i = 1; i < nodes_x - 2; i++) {
                 j = 0;
-                p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j+1][i] ) / 3 - f[j][i] / (3 * lambda);
+                p_new[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
             }
 
             //update top boundary values
             for (i = 1; i < nodes_x - 2; i++) {
                 j = nodes_x - 2;
-                p_new[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] ) / 3 - f[j][i] / (3 * lambda);
+                p_new[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i]) / 3 - f[j][i] / (3 * lambda);
             }
 
             //update corner points
-            p_new[0][0] = (p[1][0] + p[0][1]) / 2 - f[j][i] / (2 * lambda); 
+            p_new[0][0] = (p[1][0] + p[0][1]) / 2 - f[j][i] / (2 * lambda);
             p_new[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) / 2 - f[j][i] / (2 * lambda);
             p_new[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) / 2 - f[j][i] / (2 * lambda);
             p_new[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) / 2 - f[j][i] / (2 * lambda);
@@ -342,33 +343,33 @@ int main()
                 for (i = 0; i < nodes_x - 1; i++) {
                     p[j][i] = p_new[j][i];
                 }
-            }        
+            }
 
 
 
             //compute laplace_p matrix
             for (j = 1; j < nodes_y - 2; j++) {
                 for (i = 1; i < nodes_x - 2; i++) {
-                    laplace_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] + p[j+1][i] )*lambda - 4 * lambda * p[j][i];
+                    laplace_p[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) * lambda - 4 * lambda * p[j][i];
                 }
             }
             for (j = 1; j < nodes_y - 2; j++) {
                 i = 0;
-                laplace_p[j][i] = ( p[j][i+1] + p[j-1][i] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
+                laplace_p[j][i] = (p[j][i + 1] + p[j - 1][i] + p[j + 1][i]) * lambda - p[j][i] * (3 * lambda);
             }
             for (j = 1; j < nodes_y - 2; j++) {
                 i = nodes_y - 2;
-                laplace_p[j][i] = ( p[j][i-1] + p[j-1][i] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
+                laplace_p[j][i] = (p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) * lambda - p[j][i] * (3 * lambda);
             }
             for (i = 1; i < nodes_x - 2; i++) {
                 j = 0;
-                laplace_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j+1][i] ) * lambda - p[j][i] * (3 * lambda);
+                laplace_p[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j + 1][i]) * lambda - p[j][i] * (3 * lambda);
             }
             for (i = 1; i < nodes_x - 2; i++) {
                 j = nodes_x - 2;
-                laplace_p[j][i] = ( p[j][i+1] + p[j][i-1] + p[j-1][i] ) * lambda - p[j][i] * (3 * lambda);
+                laplace_p[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i]) * lambda - p[j][i] * (3 * lambda);
             }
-            laplace_p[0][0] = (p[1][0] + p[0][1]) * lambda - p[j][i] * (2 * lambda); 
+            laplace_p[0][0] = (p[1][0] + p[0][1]) * lambda - p[j][i] * (2 * lambda);
             laplace_p[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) * lambda - p[j][i] * (2 * lambda);
             laplace_p[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_x - 3][0]) * lambda - p[j][i] * (2 * lambda);
             laplace_p[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) * lambda - p[j][i] * (2 * lambda);
@@ -376,15 +377,15 @@ int main()
 
             //compute the norm
             laplace_p_minus_f_norm = 0;
-            
+
             for (j = 0; j < nodes_y - 1; j++) {
                 for (i = 0; i < nodes_x - 1; i++) {
-                    laplace_p_minus_f_norm = laplace_p_minus_f_norm + pow( ( laplace_p[j][i] - f[j][i] ) ,2);
+                    laplace_p_minus_f_norm = laplace_p_minus_f_norm + pow((laplace_p[j][i] - f[j][i]), 2);
                 }
             }
 
             laplace_p_minus_f_norm = sqrt(laplace_p_minus_f_norm);
-            
+
 
             if (f_norm = 0) {
                 RHS = epsilon;
@@ -392,27 +393,25 @@ int main()
             else {
                 RHS = epsilon * f_norm;
             }
-            
-        
+
+
         } while (laplace_p_minus_f_norm > RHS);
 
 
 
         /* ----------------------------------------------------------------------------------------------------------------------------
-        Step 3 ----------------------------------------------------------------------------------------------------------------------- 
-        */ 
+        Step 3 -----------------------------------------------------------------------------------------------------------------------
+        */
 
-    
-    
+
+
         //update interior points
         for (j = 1; j < nodes_y - 1; j++) {
             for (i = 1; i < nodes_x - 1; i++) {
-                
-                u[j][i] = u_star[j][i] - D_t * (p[j][i] - p[j][i-1]);
 
-                v[j][i] = v_star[j][i] - D_t * (p[j][i] - p[j-1][i]);
+                u[j][i] = u_star[j][i] - D_t * (p[j][i] - p[j][i - 1]);
 
-
+                v[j][i] = v_star[j][i] - D_t * (p[j][i] - p[j - 1][i]);
             }
         }
 
@@ -421,7 +420,7 @@ int main()
         for (j = 1; j < nodes_y - 1; j++) {
             i = 0;
             u[j][i] = 0;
-            v[j][i] = v_star[j][i] - D_t * (p[j][i] - p[j-1][i]);
+            v[j][i] = v_star[j][i] - D_t * (p[j][i] - p[j - 1][i]);
         }
 
         //right boundary 
@@ -432,14 +431,14 @@ int main()
         }
 
         //bottom boundary
-        for (i = 1; i < nodes_x - 1; i++){
+        for (i = 1; i < nodes_x - 1; i++) {
             j = 0;
-            u[j][i] = u_star[j][i] - D_t * (p[j][i] - p[j][i-1]);
+            u[j][i] = u_star[j][i] - D_t * (p[j][i] - p[j][i - 1]);
             v[j][i] = 0;
         }
 
         //top boundary 
-        for (i = 1; i < nodes_x - 1; i++){
+        for (i = 1; i < nodes_x - 1; i++) {
             j = nodes_y - 1;
             u[j][i] = 1;
             v[j][i] = 0;
@@ -461,12 +460,12 @@ int main()
 
 
     }
-        
+
 
     /* ---------------------------------------------------------------------------------------------------
      Print to a text file ---------------------------------------------------------------------------------------
      */
-    
+
     int something;
     something = print_current_data(num_steps, u, v, p, nodes_x, nodes_y);
 
@@ -502,4 +501,3 @@ int main()
     
     return 0;
 }
-
