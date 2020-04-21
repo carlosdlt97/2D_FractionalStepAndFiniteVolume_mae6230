@@ -173,7 +173,7 @@ int main()
                 else if (i == nodes_x - 1) {     /* At the right wall (CHECKED) */
                     u_star[j][i] = 0;
                 }
-                else if (j == 0) {      /* Just above the bottom wall (CHECKED - CORRECTION) */
+                else if (j == 0) {      /* Just above the bottom wall (CHECKED) */
                     u_cc = (u[j][i] + u[j][i + 1]) / 2;
                     u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
 
@@ -186,7 +186,7 @@ int main()
 
                     u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_x, 2) + ((1 / D_y) * (u[j + 1][i] - u[j][i]) + (2 / D_y) * (-u[j][i])) / D_y)) + u[j][i];
                 }
-                else if (j == nodes_y - 2) {    /* Just below the top lid (CHECKED - CORRECTION) */
+                else if (j == nodes_y - 2) {    /* Just below the top lid (CHECKED) */
                     u_cc = (u[j][i] + u[j][i + 1]) / 2;
                     u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
 
@@ -198,13 +198,12 @@ int main()
                     Hx = (pow(u_cc, 2) - pow(u_cc_im1, 2)) / D_x + (u_s_jp1 * v_s_jp1 - u_s * v_s) / D_y;
 
                     u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_x, 2) + ((2 / D_y) * (1 - u[j][i]) + (1 / D_y) * (u[j - 1][i] - u[j][i])) / D_y)) + u[j][i];
-                    printf("u[%d][%d] = %f\n", j, i, 1-u[j][i]);
                 }
                 else if (j == nodes_y - 1) {     /* At the top lid (CHECKED) */
                     u_star[j][i] = 1;
                 }
                 /* Calculating v_star */
-                if (i > 0 && j > 0 && i < (nodes_x - 2) && j < (nodes_y - 1)) {  /* At interior points except at the edges */
+                if (i > 0 && j > 0 && i < (nodes_x - 2) && j < (nodes_y - 1)) {  /* At interior points except at the edges (CHECKED) */
                     v_cc = (v[j][i] + v[j + 1][i]) / 2;
                     v_cc_jm1 = (v[j - 1][i] + v[j][i]) / 2;
 
@@ -217,16 +216,16 @@ int main()
 
                     v_star[j][i] = D_t * (Hy + (1 / Re) * ((v[j][i + 1] - 2 * v[j][i] + v[j][i - 1]) / pow(D_x, 2) + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_y, 2))) + v[j][i];
                 }
-                else if (j == 0) {    /* At the bottom wall */
+                else if (j == 0) {    /* At the bottom wall (CHECKED) */
                     v_star[j][i] = 0;
                 }
-                else if (j == nodes_y - 1) {     /* At the top lid */
+                else if (j == nodes_y - 1) {     /* At the top lid (CHECKED) */
                     v_star[j][i] = 0;
                 }
-                else if (i == 0) {      /* Just to the right of the left wall (NOT YET CHECKED - CORRECTION) */
+                else if (i == 0) {      /* Just to the right of the left wall (CHECKED) */
                     v_cc = (v[j][i] + v[j + 1][i]) / 2;
                     v_cc_jm1 = (v[j - 1][i] + v[j][i]) / 2;
-
+                    
                     u_s = 0;
                     v_s = 0;
                     u_s_ip1 = (u[j][i + 1] + u[j - 1][i + 1]) / 2;
@@ -236,7 +235,7 @@ int main()
 
                     v_star[j][i] = D_t * (Hy + (1 / Re) * (((1 / D_x) * (v[j][i + 1] - v[j][i]) + (2 / D_x) * (-v[j][i])) / D_x + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_y, 2))) + v[j][i];
                 }
-                else if (i == nodes_x - 2) {     /* Just the left of the right wall (NOT YET CHECKED - CORRECTION) */
+                else if (i == nodes_x - 2) {     /* Just the left of the right wall (CHECKED) */
                     v_cc = (v[j][i] + v[j + 1][i]) / 2;
                     v_cc_jm1 = (v[j - 1][i] + v[j][i]) / 2;
 
@@ -249,7 +248,7 @@ int main()
 
                     v_star[j][i] = D_t * (Hy + (1 / Re) * (((2 / D_x) * (-v[j][i]) + (1 / D_x) * (v[j][i - 1] - v[j][i])) / D_x + (v[j + 1][i] - 2 * v[j][i] + v[j - 1][i]) / pow(D_y, 2))) + v[j][i];
                 }
-                else if (i == nodes_x - 1) {      /* At the right wall */
+                else if (i == nodes_x - 1) {      /* At the right wall (CHECKED) */
                     v_star[j][i] = 0;
                 }
             }
@@ -278,7 +277,7 @@ int main()
             f[j][i] = ((u_star[j][i + 1] - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;
         }
 
-        f[nodes_y - 2][nodes_x - 2] = ((0 - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t;
+        f[nodes_y - 2][nodes_x - 2] = ((0 - u_star[j][i]) / D_x + (0 - v_star[j][i]) / D_y) / D_t; /* CHECK THIS FOR j,i values.  j,i is assumed, not set here. */
 
 
 
@@ -388,7 +387,7 @@ int main()
             laplace_p_minus_f_norm = sqrt(laplace_p_minus_f_norm);
 
 
-            if (f_norm = 0) {
+            if (f_norm == 0) {
                 RHS = epsilon;
             }
             else {
