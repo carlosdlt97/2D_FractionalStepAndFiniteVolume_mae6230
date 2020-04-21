@@ -154,7 +154,7 @@ int main()
         for (j = 0; j < nodes_y; j++) {
             for (i = 0; i < nodes_x; i++) {
                 /* Calculating u_star */
-                if (i > 0 && j > 0 && i < (nodes_x - 1) && j < (nodes_y - 2)) {  /* At interior points except at the edges */
+                if (i > 0 && j > 0 && i < (nodes_x - 1) && j < (nodes_y - 2)) {  /* At interior points except at the edges (CHECKED) */
                     u_cc = (u[j][i] + u[j][i + 1]) / 2;
                     u_cc_im1 = (u[j][i - 1] + u[j][i]) / 2;
 
@@ -167,10 +167,10 @@ int main()
 
                     u_star[j][i] = D_t * (Hx + (1 / Re) * ((u[j][i + 1] - 2 * u[j][i] + u[j][i - 1]) / pow(D_x, 2) + (u[j + 1][i] - 2 * u[j][i] + u[j - 1][i]) / pow(D_y, 2)) * u[j][i]) + u[j][i];
                 }
-                else if (i == 0) {      /* At the left wall */
+                else if (i == 0) {      /* At the left wall (CHECKED) */
                     u_star[j][i] = 0;
                 }
-                else if (i == nodes_x - 1) {     /* At the right wall */
+                else if (i == nodes_x - 1) {     /* At the right wall (CHECKED) */
                     u_star[j][i] = 0;
                 }
                 else if (j == 0) {      /* Just above the bottom wall */
