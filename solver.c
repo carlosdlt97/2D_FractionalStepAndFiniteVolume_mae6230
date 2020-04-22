@@ -83,18 +83,18 @@ int main()
 
     double Re = 100; /* Problem parameters */
     double D_t = 0.001;
-    int nodes_x = 11;
-    int nodes_y = 11;
+    int nodes_x = 129;
+    int nodes_y = 129;
     double NX = nodes_x;
     double NY = nodes_y;
     double D_x = 1 / (NX - 1);
     double D_y = 1 / (NY - 1);
     double lambda = pow(D_x, -2);
     double f_norm;
-    double epsilon = pow(10, -5);
+    double epsilon = pow(10, -4);
     double laplace_p_minus_f_norm;
     double RHS;
-    double num_steps = 100000;
+    double num_steps = 10000;
 
 
 
@@ -309,7 +309,7 @@ int main()
 
         do {
 
-            /* GAUSS-SIDEL SOLVER USED
+            /* GAUSS-SEIDEL SOLVER USED
             If this fails, make the left side p_new for all of the following lines, and uncomment the p_new updater at the bottom */
             //update interior values
             for (j = 1; j < nodes_y - 2; j++) {
