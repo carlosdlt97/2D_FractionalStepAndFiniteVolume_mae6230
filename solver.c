@@ -94,7 +94,7 @@ int main()
     double epsilon = pow(10, -5);
     double laplace_p_minus_f_norm;
     double RHS;
-    double num_steps = 1000;
+    double num_steps = 100000;
 
 
 
@@ -309,12 +309,13 @@ int main()
 
         do {
 
-
+            /* GAUSS-SIDEL SOLVER USED
+            If this fails, make the left side p_new for all of the following lines, and uncomment the p_new updater at the bottom */
             //update interior values
             for (j = 1; j < nodes_y - 2; j++) {
                 for (i = 1; i < nodes_x - 2; i++) {
 
-                    p_new[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) / 4 - f[j][i] / (4 * lambda);
+                    p[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) / 4 - f[j][i] / (4 * lambda);
 
                 }
 
@@ -323,42 +324,44 @@ int main()
             //update left boundary values
             for (j = 1; j < nodes_y - 2; j++) {
                 i = 0;
-                p_new[j][i] = (p[j][i + 1] + p[j - 1][i] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
+                p[j][i] = (p[j][i + 1] + p[j - 1][i] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
 
             }
 
             //update right boundary values
             for (j = 1; j < nodes_y - 2; j++) {
                 i = nodes_y - 2;
-                p_new[j][i] = (p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
+                p[j][i] = (p[j][i - 1] + p[j - 1][i] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
 
             }
 
             //update bottom boundary values 
             for (i = 1; i < nodes_x - 2; i++) {
                 j = 0;
-                p_new[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
+                p[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j + 1][i]) / 3 - f[j][i] / (3 * lambda);
             }
 
             //update top boundary values
             for (i = 1; i < nodes_x - 2; i++) {
                 j = nodes_x - 2;
-                p_new[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i]) / 3 - f[j][i] / (3 * lambda);
+                p[j][i] = (p[j][i + 1] + p[j][i - 1] + p[j - 1][i]) / 3 - f[j][i] / (3 * lambda);
             }
 
             //update corner points
-            p_new[0][0] = (p[1][0] + p[0][1]) / 2 - f[0][0] / (2 * lambda);
-            p_new[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) / 2 - f[0][nodes_x - 2] / (2 * lambda);
-            p_new[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_y - 3][0]) / 2 - f[nodes_y - 2][0] / (2 * lambda);
-            p_new[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) / 2 - f[nodes_y - 2][nodes_x - 2] / (2 * lambda);
+            p[0][0] = (p[1][0] + p[0][1]) / 2 - f[0][0] / (2 * lambda);
+            p[0][nodes_x - 2] = (p[1][nodes_x - 2] + p[0][nodes_x - 3]) / 2 - f[0][nodes_x - 2] / (2 * lambda);
+            p[nodes_y - 2][0] = (p[nodes_y - 2][1] + p[nodes_y - 3][0]) / 2 - f[nodes_y - 2][0] / (2 * lambda);
+            p[nodes_y - 2][nodes_x - 2] = (p[nodes_y - 2][nodes_x - 3] + p[nodes_y - 3][nodes_x - 2]) / 2 - f[nodes_y - 2][nodes_x - 2] / (2 * lambda);
 
+            /*
             //update p matrix with p_new values
             for (j = 0; j < nodes_y - 1; j++) {
                 for (i = 0; i < nodes_x - 1; i++) {
                     p[j][i] = p_new[j][i];
                 }
             }
-            
+            */
+
             /* PRINTING TO CHECK VALUES (DELETE THIS LATER)
             printf("p\n");
             for (j = nodes_y - 1; j > -1; j--) {
