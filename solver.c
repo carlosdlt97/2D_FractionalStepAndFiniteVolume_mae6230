@@ -249,7 +249,7 @@ int GS_nstep(double** f, double** phi, int Nx, int Ny, double epsilon, int nGS) 
 
 
 int MG_recursion(double** f, double** phi, int Nx, int Ny, double epsilon, int nGS) {
-
+    
     /* Initializing variables */
     int finished;
     int i, j;
@@ -508,8 +508,9 @@ int MG_recursion(double** f, double** phi, int Nx, int Ny, double epsilon, int n
     free(residual2);
     free(error);
     free(error2);
-    free(laplace_phi);  
+    free(laplace_phi);
 
+    
     return 0;
 }
 
@@ -518,16 +519,15 @@ int MG_recursion(double** f, double** phi, int Nx, int Ny, double epsilon, int n
 ==================================================================================================================== */
 
 
-int Multigrid_solver(double** f, double** phi, int Nx, int Ny, double lambda, double epsilon, double epsilon2, int nGS) {
-
+int Multigrid_solver(double** f, double** phi, int Nx, int Ny, double lambda, double epsilon, double epsilon2, int nGS, double f_norm) {
+    
     int i, j;
     double nx = Nx;
     double ny = Ny;
     double D_x = 1 / nx;
     double D_y = 1 / ny;
-    int step;
+    int step = 1;
     int max_num_steps = 2000;
-    double f_norm;
     double laplace_phi_minus_f_norm;
     double RHS;
     double integral;
@@ -629,6 +629,7 @@ int Multigrid_solver(double** f, double** phi, int Nx, int Ny, double lambda, do
     }
     free(laplace_phi);
 
+    
 }
 
 
@@ -653,7 +654,7 @@ int main()
     int k = 0;
     int iter = 0;
 
-    char solver_choice[] = "MG"; /* Must be either "MG" for multigrid method or "GS" for Gauss-Seidel method */
+    char solver_choice[] = "GS"; /* Must be either "MG" for multigrid method or "GS" for Gauss-Seidel method */
 
     double Re = 100; /* Problem parameters */
     double D_t = 0.001;
@@ -665,7 +666,7 @@ int main()
     double D_y = 1 / (NY - 1);
     double lambda = pow(D_x, -2);
     double f_norm;
-    double epsilon = pow(10, -4);
+    double epsilon = pow(10, -5);
     double epsilon2 = epsilon * pow(10, -2);
     double laplace_p_minus_f_norm;
     double RHS;
@@ -980,7 +981,7 @@ int main()
 
         if (strcmp(solver_choice, "MG") == 0) {
 
-            Multigrid_solver(f, p, nodes_x - 1, nodes_y - 1, lambda, epsilon, epsilon2, nGS);
+            Multigrid_solver(f, p, nodes_x - 1, nodes_y - 1, lambda, epsilon, epsilon2, nGS, f_norm);
 
         }
 
@@ -1043,7 +1044,7 @@ int main()
 
         u[nodes_y - 1][nodes_x - 1] = 0;
         v[nodes_y - 1][nodes_x - 1] = 0;
-
+      
 
     }
 
